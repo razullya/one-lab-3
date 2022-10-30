@@ -61,7 +61,8 @@ func main() {
 	c2 := square(in)
 
 	out := merge(c1, c2)
-	
-	fmt.Println(<-out)
-	return
+
+	for n := range out {
+		fmt.Println(n)
+	}
 }
