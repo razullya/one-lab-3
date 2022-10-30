@@ -16,30 +16,27 @@ func main() {
 	// so that internal goroutine
 	// started by gen is not leaked.
 
+	// Create a context that is cancellable.
 	ctx, cancel := context.WithCancel(context.Background())
-	
-	k:=0
+
 	generator := func(ctx context.Context) <-chan int {
-
 		out := make(chan int)
-		s1 := rand.NewSource(time.Now().UnixNano())
-		r1 := rand.New(s1)
-
+		r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
 		go func() {
-			for i := 0; i < 5; i++ {
+			for i := 0; ; i++ {
+				if i == 5 {
+					cancel()
+					close(out)
+					break
+				}
 				out <- r1.Intn(100)
 			}
-			close(out)
 		}()
 		return out
 	}
-	out := generator(ctx)
-	fmt.Println(<-out)
-	k++
-	
-	// Create a context that is cancellable.
-	if k==5{
-		cancel()
-	}
 
+	out := generator(ctx)
+	for n := range out {
+		fmt.Println(n)
+	}
 }

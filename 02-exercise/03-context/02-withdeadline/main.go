@@ -14,16 +14,20 @@ func main() {
 
 	// TODO: set deadline for goroutine to return computational result.
 
-	compute := func(ctx context.Context) <-chan data {
+	compute := func() <-chan data {
+		fmt.Println("deadline starts")
+		ctx, _ := context.WithDeadline(context.Background(), <-time.After(time.Second*10))
 		ch := make(chan data)
 		go func() {
 			defer close(ch)
 			// Simulate work.
-			time.Sleep(50 * time.Millisecond)
+			fmt.Println("work")
 
 			// Report result.
 			ch <- data{"123"}
 		}()
+		<-ctx.Done()
+		fmt.Println("deadline ends")
 		return ch
 	}
 
